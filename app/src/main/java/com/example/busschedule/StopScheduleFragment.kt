@@ -20,9 +20,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.busschedule.databinding.StopScheduleFragmentBinding
+import com.example.busschedule.viewmodels.BusScheduleViewModel
+import com.example.busschedule.viewmodels.BusScheduleViewModelFactory
 
 class StopScheduleFragment: Fragment() {
 
@@ -38,6 +41,12 @@ class StopScheduleFragment: Fragment() {
 
     private lateinit var stopName: String
 
+    private val viewModel: BusScheduleViewModel by activityViewModels {
+        BusScheduleViewModelFactory(
+            (activity?.application as BusScheduleApplication).database.scheduleDao()
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -52,14 +61,20 @@ class StopScheduleFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = StopScheduleFragmentBinding.inflate(inflater, container, false)
-        val view = binding.root
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        // The above is the boiler template code
+
+        val busStopAdapter = BusStopAdapter {}
+        recyclerView.adapter = busStopAdapter
+        // codelabだとscheduleForStopNameの引数がないがそれだとエラーになる
+        // https://developer.android.com/codelabs/basic-android-kotlin-training-intro-room-flow#7
+        busStopAdapter.submitList(viewModel.scheduleForStopName(stopName))
     }
 
     override fun onDestroyView() {

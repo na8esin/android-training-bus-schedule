@@ -5,10 +5,15 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.busschedule.database.schedule.Schedule
 import com.example.busschedule.database.schedule.ScheduleDao
 
+/*
+ databaseをApplicationから持ってくるから引数に必要
+ きっとDIできるはず
+ */
 class BusScheduleViewModel(private val scheduleDao: ScheduleDao): ViewModel() {
     fun fullSchedule(): List<Schedule> = scheduleDao.getAll()
 
-    fun scheduleForStopName(name: String): List<Schedule> = scheduleDao.getByStopName(name)
+    fun scheduleForStopName(name: String)
+            : List<Schedule> = scheduleDao.getByStopName(name)
 }
 
 class BusScheduleViewModelFactory(
