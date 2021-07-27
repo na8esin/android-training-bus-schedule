@@ -21,11 +21,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.coroutineScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.busschedule.databinding.StopScheduleFragmentBinding
 import com.example.busschedule.viewmodels.BusScheduleViewModel
 import com.example.busschedule.viewmodels.BusScheduleViewModelFactory
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class StopScheduleFragment: Fragment() {
 
@@ -74,7 +77,13 @@ class StopScheduleFragment: Fragment() {
         recyclerView.adapter = busStopAdapter
         // codelabだとscheduleForStopNameの引数がないがそれだとエラーになる
         // https://developer.android.com/codelabs/basic-android-kotlin-training-intro-room-flow#7
-        busStopAdapter.submitList(viewModel.scheduleForStopName(stopName))
+        // ただ引数を追加してもdatabaseへのアクセスがmain threadなので#7の時点では動かない
+        // https://github.com/google-developer-training/android-basics-kotlin-bus-schedule-app/issues/2
+        lifecycle.coroutineScope.launch {
+            viewModel.scheduleForStopName(stopName).collect {
+                busStopAdapter.submitList(it)
+            }
+        }
     }
 
     override fun onDestroyView() {
